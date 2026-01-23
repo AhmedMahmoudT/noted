@@ -192,6 +192,21 @@ export default function Dashboard() {
         }
     };
 
+    const handleDeleteNote = async (note: Note) => {
+        if (!user) return;
+        const confirmed = window.confirm(`Delete "${note.title || "Untitled"}"?`);
+        if (!confirmed) return;
+        try {
+            await NoteService.deleteNote(note.id);
+            if (activeNoteId === note.id) {
+                const remainingNotes = notes.filter((item) => item.id !== note.id);
+                setActiveNoteId(remainingNotes[0]?.id);
+            }
+        } catch (error) {
+            console.error("Failed to delete note", error);
+        }
+    };
+
     const activeNote = notes.find(n => n.id === activeNoteId);
 
     // Simple debounce implementation
@@ -228,6 +243,7 @@ export default function Dashboard() {
                     }}
                     onCreateNote={handleCreateNote}
                     onOpenSettings={() => setIsSettingsOpen(true)}
+                    onDeleteNote={handleDeleteNote}
                 />
             </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Note } from "@/lib/types/note";
-import { Plus, FileText, Search, Settings, Folder } from "lucide-react";
+import { Plus, FileText, Search, Settings, Folder, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface SidebarProps {
@@ -10,9 +10,17 @@ interface SidebarProps {
     onSelectNote: (note: Note) => void;
     onCreateNote: () => void;
     onOpenSettings: () => void;
+    onDeleteNote: (note: Note) => void;
 }
 
-export default function Sidebar({ notes, activeNoteId, onSelectNote, onCreateNote, onOpenSettings }: SidebarProps) {
+export default function Sidebar({
+    notes,
+    activeNoteId,
+    onSelectNote,
+    onCreateNote,
+    onOpenSettings,
+    onDeleteNote,
+}: SidebarProps) {
     const [search, setSearch] = useState("");
 
     const filteredNotes = notes.filter((note) =>
@@ -54,14 +62,24 @@ export default function Sidebar({ notes, activeNoteId, onSelectNote, onCreateNot
                     </div>
                 ) : (
                     filteredNotes.map((note) => (
-                        <button
-                            key={note.id}
-                            onClick={() => onSelectNote(note)}
-                            className={`note-item ${activeNoteId === note.id ? "active" : ""}`}
-                        >
-                            <FileText className="note-icon" />
-                            <span className="note-title">{note.title || "Untitled"}</span>
-                        </button>
+                        <div key={note.id} className={`note-row ${activeNoteId === note.id ? "active" : ""}`}>
+                            <button
+                                onClick={() => onSelectNote(note)}
+                                className="note-item"
+                                aria-label={`Open ${note.title || "Untitled"}`}
+                            >
+                                <FileText className="note-icon" />
+                                <span className="note-title">{note.title || "Untitled"}</span>
+                            </button>
+                            <button
+                                onClick={() => onDeleteNote(note)}
+                                className="btn-icon note-delete"
+                                title="Delete note"
+                                aria-label={`Delete ${note.title || "Untitled"}`}
+                            >
+                                <Trash2 className="icon-sm" />
+                            </button>
+                        </div>
                     ))
                 )}
             </div>

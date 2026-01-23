@@ -2,6 +2,7 @@ import {
   collection,
   addDoc,
   updateDoc,
+  deleteDoc,
   doc,
   query,
   where,
@@ -47,6 +48,12 @@ export const NoteService = {
       ...data,
       updatedAt: serverTimestamp(),
     });
+  },
+
+  // Delete a note
+  deleteNote: async (noteId: string) => {
+    const noteRef = doc(db, NOTES_COLLECTION, noteId);
+    await deleteDoc(noteRef);
   },
 
   // Subscribe to user's notes

@@ -197,6 +197,7 @@ body {
   width: 100%;
   overflow: hidden;
   background-color: hsl(var(--background));
+  user-select: none;
 }
 
 /* Sidebar */
@@ -205,7 +206,7 @@ body {
   height: 100%;
   flex-shrink: 0;
   border-right: 1px solid hsl(var(--border));
-  background-color: rgba(20, 20, 25, 0.3);
+  background-color: hsl(var(--card));
   transition: transform 0.3s ease;
 }
 
@@ -271,6 +272,12 @@ body {
   gap: 0.25rem;
 }
 
+.note-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .note-item {
   width: 100%;
   display: flex;
@@ -285,13 +292,15 @@ body {
   cursor: pointer;
   color: hsl(var(--muted-foreground));
   transition: colors 0.1s;
+  flex: 1;
+  min-width: 0;
 }
 
 .note-item:hover {
   background-color: hsl(var(--secondary));
   color: hsl(var(--foreground));
 }
-.note-item.active {
+.note-row.active .note-item {
   background-color: rgba(255, 255, 255, 0.05);
   color: hsl(var(--primary));
   font-weight: 500;
@@ -309,6 +318,15 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.note-delete {
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+.note-row:hover .note-delete,
+.note-row.active .note-delete {
+  opacity: 1;
 }
 
 .empty-state {
@@ -477,6 +495,7 @@ body {
   outline: none;
   color: hsl(var(--foreground));
   padding: 0;
+  user-select: text;
 }
 .editor-title-input::placeholder {
   color: hsla(0, 0%, 98%, 0.2);
@@ -501,6 +520,7 @@ body {
   resize: none;
   outline: none;
   padding: 0.25rem;
+  user-select: text;
 }
 .editor-textarea:focus {
   color: hsl(var(--foreground));
@@ -534,6 +554,18 @@ body {
 @media (max-width: 767px) {
   .settings-panel {
     width: calc(100% - 2rem);
+  }
+  .editor-header {
+    gap: 0.5rem;
+  }
+  .editor-title-input {
+    font-size: 1.5rem;
+  }
+  .editor-textarea {
+    font-size: 1rem;
+  }
+  .editor-wrapper {
+    padding: 1rem;
   }
   .sidebar-wrapper {
     position: fixed;
@@ -573,6 +605,7 @@ body {
   color: hsl(var(--foreground));
   line-height: 1.6;
   font-family: var(--markdown-font);
+  user-select: text;
 }
 
 .markdown-preview h1,
@@ -585,6 +618,51 @@ body {
   margin-bottom: 0.5em;
   font-weight: 600;
   line-height: 1.25;
+}
+
+.markdown-section {
+  border-bottom: 1px solid hsl(var(--border));
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+.markdown-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.markdown-section summary {
+  cursor: pointer;
+  list-style: none;
+}
+.markdown-section summary::-webkit-details-marker {
+  display: none;
+}
+.markdown-heading.level-1 {
+  font-size: 2.25em;
+  font-weight: 600;
+}
+.markdown-heading.level-2 {
+  font-size: 1.875em;
+  font-weight: 600;
+}
+.markdown-heading.level-3 {
+  font-size: 1.5em;
+  font-weight: 600;
+}
+.markdown-heading.level-4 {
+  font-size: 1.25em;
+  font-weight: 600;
+}
+.markdown-heading.level-5 {
+  font-size: 1.1em;
+  font-weight: 600;
+}
+.markdown-heading.level-6 {
+  font-size: 1em;
+  font-weight: 600;
+}
+.markdown-section-body {
+  margin-top: 0.75rem;
 }
 
 .markdown-preview h1 {
@@ -624,6 +702,11 @@ body {
   padding-left: 1em;
   color: hsl(var(--muted-foreground));
   margin-bottom: 1em;
+}
+
+.markdown-preview input[type="checkbox"] {
+  margin-right: 0.5rem;
+  transform: translateY(1px);
 }
 
 .markdown-preview code {
