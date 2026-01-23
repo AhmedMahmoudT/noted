@@ -4,9 +4,9 @@ import {
   initializeFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
+  Firestore,
 } from "firebase/firestore";
 
-// TODO: Replace with your Firebase project configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -21,7 +21,7 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 
 // Initialize Firestore with offline persistence (Browser only)
-let db;
+let db: Firestore;
 if (typeof window !== "undefined") {
   db = initializeFirestore(app, {
     localCache: persistentLocalCache({

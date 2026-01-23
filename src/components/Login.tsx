@@ -17,26 +17,26 @@ export default function Login() {
     };
 
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-background">
-            <div className="flex w-full max-w-sm flex-col items-center justify-center gap-6 p-4">
-                <div className="flex flex-col items-center gap-2 text-center">
-                    <div className="rounded-xl bg-secondary p-3">
-                        <NotebookPen className="h-8 w-8 text-foreground" />
+        <div className="auth-page">
+            <div className="auth-card">
+                <div className="auth-header">
+                    <div className="auth-icon">
+                        <NotebookPen className="icon-lg" />
                     </div>
-                    <h1 className="text-2xl font-semibold tracking-tight">Welcome to Noted</h1>
-                    <p className="text-sm text-muted-foreground">
+                    <h1 className="auth-title">Welcome to Noted</h1>
+                    <p className="auth-subtitle">
                         Your offline-first, second brain.
                     </p>
                 </div>
 
-                <div className="flex flex-col gap-4 w-full">
+                <div className="auth-actions">
                     <button
                         onClick={handleLogin}
-                        className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 w-full"
+                        className="btn btn-primary btn-full"
                     >
                         Sign in with Google
                     </button>
-                    {error && <p className="text-sm text-destructive text-center">{error}</p>}
+                    {error && <p className="error-text">{error}</p>}
                 </div>
             </div>
         </div>
