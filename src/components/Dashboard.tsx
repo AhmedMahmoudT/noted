@@ -131,9 +131,17 @@ export default function Dashboard() {
     const [activeNoteId, setActiveNoteId] = useState<string | undefined>();
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [appFont, setAppFont] = useState("geist");
-    const [markdownFont, setMarkdownFont] = useState("geist");
-    const [theme, setTheme] = useState("noir");
+    const [appFont, setAppFont] = useState(() =>
+        typeof window !== "undefined" ? localStorage.getItem("noted.appFont") ?? "geist" : "geist"
+    );
+    const [markdownFont, setMarkdownFont] = useState(() =>
+        typeof window !== "undefined" ? localStorage.getItem("noted.markdownFont") ?? "geist" : "geist"
+    );
+    const [theme, setTheme] = useState(() =>
+        typeof window !== "undefined" ? localStorage.getItem("noted.theme") ?? "noir" : "noir"
+    );
+    const [newNoteId, setNewNoteId] = useState<string | null>(null);
+    const [titleFocusToken, setTitleFocusToken] = useState(0);
 
     // Subscribe to notes
     useEffect(() => {
@@ -146,16 +154,7 @@ export default function Dashboard() {
         return () => unsubscribe();
     }, [user]);
 
-    useEffect(() => {
-        const storedAppFont = localStorage.getItem("noted.appFont");
-        const storedMarkdownFont = localStorage.getItem("noted.markdownFont");
-        const storedTheme = localStorage.getItem("noted.theme");
-
-        if (storedAppFont) setAppFont(storedAppFont);
-        if (storedMarkdownFont) setMarkdownFont(storedMarkdownFont);
-        if (storedTheme) setTheme(storedTheme);
-    }, []);
-
+    // Apply app font changes
     useEffect(() => {
         const selectedAppFont = appFontOptions.find((option) => option.id === appFont);
         if (selectedAppFont) {
@@ -164,6 +163,7 @@ export default function Dashboard() {
         }
     }, [appFont]);
 
+    // Apply markdown font changes
     useEffect(() => {
         const selectedMarkdownFont = markdownFontOptions.find((option) => option.id === markdownFont);
         if (selectedMarkdownFont) {
@@ -172,6 +172,7 @@ export default function Dashboard() {
         }
     }, [markdownFont]);
 
+    // Apply theme changes
     useEffect(() => {
         const selectedTheme = themeOptions.find((option) => option.id === theme);
         if (!selectedTheme) return;
@@ -187,6 +188,7 @@ export default function Dashboard() {
         try {
             const newNote = await NoteService.createNote(user.uid);
             setActiveNoteId(newNote.id);
+            setNewNoteId(newNote.id);
         } catch (error) {
             console.error("Failed to create note", error);
         }
@@ -198,6 +200,9 @@ export default function Dashboard() {
         if (!confirmed) return;
         try {
             await NoteService.deleteNote(note.id);
+            if (typeof window !== "undefined") {
+                localStorage.removeItem(`noted.noteMode.${note.id}`);
+            }
             if (activeNoteId === note.id) {
                 const remainingNotes = notes.filter((item) => item.id !== note.id);
                 setActiveNoteId(remainingNotes[0]?.id);
@@ -259,7 +264,14 @@ export default function Dashboard() {
                                 <Menu className="icon-sm" />
                             </button>
                         )}
-                        <span className="header-title">{activeNote ? (activeNote.title || "Untitled") : "Noted"}</span>
+                        <button
+                            type="button"
+                            className="header-title header-title-btn"
+                            onClick={() => activeNote && setTitleFocusToken((token) => token + 1)}
+                            title={activeNote ? "Rename note" : undefined}
+                        >
+                            {activeNote ? (activeNote.title || "Untitled") : "Noted"}
+                        </button>
                     </div>
 
                     <div className="header-right">
@@ -278,6 +290,9 @@ export default function Dashboard() {
                                 initialTitle={activeNote.title}
                                 initialContent={activeNote.content}
                                 onUpdate={(data) => debouncedUpdate(activeNote.id, data)}
+                                forceEdit={activeNote.id === newNoteId}
+                                onForceEditHandled={() => setNewNoteId(null)}
+                                focusTitleToken={titleFocusToken}
                             />
                         </div>
                     ) : (

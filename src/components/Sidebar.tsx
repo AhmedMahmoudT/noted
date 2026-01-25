@@ -35,7 +35,12 @@ export default function Sidebar({
                     <Folder className="icon-md" />
                     <span>Noted</span>
                 </div>
-                <button onClick={onCreateNote} className="btn-icon">
+                <button
+                    onClick={onCreateNote}
+                    className="btn-icon"
+                    aria-label="Create new note"
+                    title="Create new note"
+                >
                     <Plus className="icon-md" />
                 </button>
             </div>
@@ -58,11 +63,14 @@ export default function Sidebar({
             <div className="note-list">
                 {filteredNotes.length === 0 ? (
                     <div className="empty-state">
-                        {search ? "No notes found" : "No notes yet"}
+                        {search ? "No matching notes" : "No notes yet"}
                     </div>
                 ) : (
                     filteredNotes.map((note) => (
-                        <div key={note.id} className={`note-row ${activeNoteId === note.id ? "active" : ""}`}>
+                        <div
+                            key={note.id}
+                            className={`note-row ${activeNoteId === note.id ? "active" : ""}`}
+                        >
                             <button
                                 onClick={() => onSelectNote(note)}
                                 className="note-item"
@@ -72,7 +80,10 @@ export default function Sidebar({
                                 <span className="note-title">{note.title || "Untitled"}</span>
                             </button>
                             <button
-                                onClick={() => onDeleteNote(note)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDeleteNote(note);
+                                }}
                                 className="btn-icon note-delete"
                                 title="Delete note"
                                 aria-label={`Delete ${note.title || "Untitled"}`}
@@ -86,7 +97,10 @@ export default function Sidebar({
 
             {/* Footer */}
             <div className="sidebar-footer">
-                <button className="btn btn-ghost btn-full flex-start" onClick={onOpenSettings}>
+                <button
+                    className="btn btn-ghost btn-full flex-start"
+                    onClick={onOpenSettings}
+                >
                     <Settings className="icon-sm" />
                     <span>Settings</span>
                 </button>

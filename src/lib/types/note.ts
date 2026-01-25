@@ -5,4 +5,5 @@ export interface Note {
   createdAt: number;
   updatedAt: number;
   userId: string;
+  isPreview?: boolean; // Track view mode per note
 }

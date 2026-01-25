@@ -10,24 +10,77 @@ interface EditorProps {
     initialContent: string;
     initialTitle: string;
     onUpdate: (data: Partial<Note>) => void;
+    forceEdit?: boolean;
+    onForceEditHandled?: () => void;
+    focusTitleToken?: number;
 }
 
-export default function Editor({ note, initialContent, initialTitle, onUpdate }: EditorProps) {
+export default function Editor({
+    note,
+    initialContent,
+    initialTitle,
+    onUpdate,
+    forceEdit = false,
+    onForceEditHandled,
+    focusTitleToken = 0,
+}: EditorProps) {
     const [title, setTitle] = useState(initialTitle);
     const [content, setContent] = useState(initialContent);
     const [isPreview, setIsPreview] = useState(false);
+    const [isTitleEditing, setIsTitleEditing] = useState(false);
 
-    // Sync if note ID changes
+    // Sync content/title when note changes
     useEffect(() => {
         setTitle(note.title);
         setContent(note.content);
-        setIsPreview(false);
+        setIsTitleEditing(false);
     }, [note.id, note.title, note.content]);
+
+    useEffect(() => {
+        if (forceEdit) {
+            setIsPreview(false);
+            onForceEditHandled?.();
+            return;
+        }
+
+        const storedMode =
+            typeof window !== "undefined" ? localStorage.getItem(`noted.noteMode.${note.id}`) : null;
+        if (storedMode) {
+            setIsPreview(storedMode === "preview");
+        }
+    }, [note.id, forceEdit, onForceEditHandled]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        localStorage.setItem(`noted.noteMode.${note.id}`, isPreview ? "preview" : "edit");
+    }, [note.id, isPreview]);
+
+    useEffect(() => {
+        if (focusTitleToken <= 0) return;
+        setIsTitleEditing(true);
+    }, [focusTitleToken]);
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value;
         setTitle(val);
-        onUpdate({ title: val });
+    };
+
+    const handleTitleBlur = () => {
+        setIsTitleEditing(false);
+        // Save the title if it was changed
+        if (title !== note.title) {
+            onUpdate({ title });
+        }
+    };
+
+    const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.currentTarget.blur();
+        }
+        if (e.key === 'Escape') {
+            setTitle(note.title);
+            setIsTitleEditing(false);
+        }
     };
 
     const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -83,34 +136,55 @@ export default function Editor({ note, initialContent, initialTitle, onUpdate }:
         });
     };
 
-    const handleToggleTask = (taskIndex: number) => {
-        let index = 0;
-        const updated = content.replace(/-\s\[( |x|X)\]/g, (match, state) => {
-            if (index !== taskIndex) {
-                index += 1;
-                return match;
-            }
-            index += 1;
-            return state.toLowerCase() === "x" ? "- [ ]" : "- [x]";
-        });
+    const handleToggleTask = (lineNumber?: number | null) => {
+        if (!lineNumber || lineNumber < 1) return;
+        const lines = content.split("\n");
+        const lineIndex = lineNumber - 1;
+        const line = lines[lineIndex];
+        if (!line) return;
+
+        const match = line.match(/^(\s*)([-*+]|\d+\.)\s\[( |x|X)\](.*)$/);
+        if (!match) return;
+
+        const isChecked = match[3].toLowerCase() === "x";
+        lines[lineIndex] = line.replace(/\[( |x|X)\]/, isChecked ? "[ ]" : "[x]");
+        const updated = lines.join("\n");
 
         if (updated !== content) {
             setContent(updated);
             onUpdate({ content: updated });
         }
     };
+
+    const handleTogglePreview = () => {
+        const newPreviewState = !isPreview;
+        setIsPreview(newPreviewState);
+    };
+
     return (
         <div className="editor-container">
             <div className="editor-header">
-                <input
-                    className="editor-title-input"
-                    placeholder="Untitled"
-                    value={title}
-                    onChange={handleTitleChange}
-                    disabled={isPreview}
-                />
+                {isTitleEditing ? (
+                    <input
+                        className="editor-title-input"
+                        placeholder="Untitled"
+                        value={title}
+                        onChange={handleTitleChange}
+                        onBlur={handleTitleBlur}
+                        onKeyDown={handleTitleKeyDown}
+                        autoFocus
+                    />
+                ) : (
+                    <h1
+                        className="editor-title-display"
+                        onClick={() => setIsTitleEditing(true)}
+                        title="Click to edit title"
+                    >
+                        {title || "Untitled"}
+                    </h1>
+                )}
                 <button
-                    onClick={() => setIsPreview(!isPreview)}
+                    onClick={handleTogglePreview}
                     className="btn-icon"
                     title={isPreview ? "Edit" : "Preview"}
                 >
@@ -132,5 +206,5 @@ export default function Editor({ note, initialContent, initialTitle, onUpdate }:
                 )}
             </div>
         </div>
-    )
+    );
 }
